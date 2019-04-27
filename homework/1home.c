@@ -1,8 +1,8 @@
 /*************************************************************************
-	> File Name: homework.c
+	> File Name: 1home.c
 	> Author: liujunming 
 	> Mail: 1292917361@qq.com 
-	> Created Time: 2019年04月14日 星期日 19时26分09秒
+	> Created Time: 2019年04月27日 星期六 09时33分46秒
  ************************************************************************/
 
 #include <stdio.h>
@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <sys/utsname.h>
 #include <string.h>
+
 int main()
 {   
     char computer[256];
