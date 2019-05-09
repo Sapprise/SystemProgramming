@@ -10,11 +10,18 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <termios.h>
 #include <dirent.h>
 #include <pwd.h>
 #include <utime.h>
 #include <time.h>
 #include <grp.h>
+#include <iostream>
+#include <algorithm>
+#include <string>
+using namespace std;
 
 #ifndef FILE_MAX
 #define FILE_MAX 1024
@@ -34,19 +41,37 @@ char getFileType(mode_t mode) {
     else return '-';
 }
 
-void printf_ls_al(int argc, char *argv[]) {
-        char *dirPath;
-        if(argc >= 2) dirPath = argv[1];
-            else{
-                dirPath = malloc(FILENAME_MAX);
+bool cmp(string s1, string s2) {
+    return s1<s2;
+}
+
+void sort(char array[][FILENAME_MAX], int n){
+    int i,j;
+    char temp[FILENAME_MAX];
+    for(i = n-1; i >= 0; --i)
+        for(j = 0; j < i; ++j)
+    if(strcmp(array[j], array[j+1]) > 0){
+                strcpy(temp, array[j]);
+                strcpy(array[j], array[j+1]);
+                strcpy(array[j+1], temp);
+              
+    }
+}
+
+void printf_ls_al(int argc, char *if_al) {
+    char *dirPath;
+    DIR * dirp;
+    if(argc >= 3) {
+        dirPath = if_al; 
+        dirp = opendir(dirPath);
+    } else { 
+            dirp = opendir(".");
             if(getcwd(dirPath, FILENAME_MAX) == NULL){
-                    perror("getcwd returns error");
-                    exit(EXIT_FAILURE);
-                    
-            }
+            perror("getcwd returns error");
+            exit(EXIT_FAILURE);
+    }
         }
-          
-        DIR * dirp = opendir(dirPath);
+
         if(dirp == NULL){
             perror("opendir returns error");
             exit(EXIT_FAILURE);
@@ -56,8 +81,8 @@ void printf_ls_al(int argc, char *argv[]) {
             struct dirent * fileInfo = readdir(dirp);
             if(fileInfo == NULL) break;
             strcpy(fileName[filen++], fileInfo->d_name);
-              
         }
+        sort(fileName, filen);
         for(i = 0; i < filen; ++i){
             struct passwd * userInfo;
             struct group * groupInfo;
@@ -88,32 +113,80 @@ void printf_ls_al(int argc, char *argv[]) {
             printf("%s %2d %8s %8s %5d %2d月 %2d %02d:%02d %s\n",fileMode,fileStat.st_nlink,userInfo->pw_name, groupInfo->gr_name,(int)fileStat.st_size,mTime->tm_mon+1, mTime->tm_mday, mTime->tm_hour, mTime->tm_min, fileName[i]); 
               
         }
-  if(argc < 2) free(dirPath);
 }
 
-/*
-void printf_ls() {
-        char *dirPath;
-        if(argc >= 2) dirPath = argv[1];
-            else{
-                dirPath = malloc(FILENAME_MAX);
+void printf_ls(int argc, char * if_ls) {
+    char *dirPath;
+    char s[100];
+    DIR *dir;
+    string res[1000];
+    struct dirent *rent;//struct
+    if(argc >= 2) {
+        dirPath = if_ls;
+        dir = opendir(dirPath);
+    }
+        else{
+            dir = opendir(".");
             if(getcwd(dirPath, FILENAME_MAX) == NULL){
-                    perror("getcwd returns error");
-                    exit(EXIT_FAILURE);
-                    
-            }
-        }
-          
-        DIR * dirp = opendir(dirPath);
-        if(dirp == NULL){
-            perror("opendir returns error");
+            perror("getcwd returns error");
             exit(EXIT_FAILURE);
+    }
+  }
+    int cnt = 0;
+    int maxlength = 0;
+    struct winsize size;
+    ioctl(STDIN_FILENO, TIOCGWINSZ, &size);
+    while((rent=readdir(dir)))//利用dirent中的readdir来获取文件
+    {
+             strcpy(s, rent->d_name);//获取文件名
+        if (strlen(s) > maxlength) {maxlength = strlen(s);}
+        if (s[0] != '.' && s)
+        {
+            res[cnt++]=s;
+        }   
+    }
+    sort(res,res+cnt,cmp);//排序输出文件
+    int num = 0;
+    int breadth = size.ws_col / maxlength;
+    while (num < cnt) {
+        if (cnt / breadth == 0) {
+            cout<<res[num]<<" ";
+            num += 1;
+        } else {
+            for (int i = 0; i <= cnt / breadth; i++) {
+                for (int j = 0; j < breadth; j++) {
+                cout<<res[j * (cnt / breadth) + j + i ] <<" ";
+                num += 1;
+                if (num == cnt) continue;
+        }
+        cout<<"\n";
+                }
+            }
+    }       
+    closedir(dir);
+}          
         
-}
-*/
-int main(int argc, char *argv[]) {
-     
 
-    printf_ls_al(argc, argv);
+int main(int argc, char *argv[]) {
+    char *if_ls;
+    int swich;
+    if (argc >=3) {
+    for (int i = 1; i < argc; i++ ) {
+        swich = 0;
+        if_ls = argv[i]; 
+        if (if_ls[0] == '-') swich = 1;
+        switch(swich) {
+            case 0 : break;
+            case 1 : printf_ls_al(argc, argv[i+1]); break;
+        }
+    }
+    } else {
+        if_ls = argv[1];
+        if(if_ls[0] == '-') {
+            printf_ls_al(argc,argv[1]);
+        } else{
+            printf_ls(argc, argv[1]);
+        }
+    }
     return 0;
 }
