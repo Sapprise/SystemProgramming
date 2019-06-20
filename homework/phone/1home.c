@@ -1,8 +1,8 @@
 /*************************************************************************
-	> File Name: 2home.c
+	> File Name: 1home.c
 	> Author: liujunming 
 	> Mail: 1292917361@qq.com 
-	> Created Time: 2019年04月27日 星期六 09时29分50秒
+	> Created Time: 2019年04月27日 星期六 09时33分46秒
  ************************************************************************/
 
 #include <stdio.h>
@@ -11,40 +11,29 @@
 #include <unistd.h>
 #include <sys/utsname.h>
 #include <string.h>
-#include <signal.h>
 
 int main()
 {   
     char computer[256];
-    char buffer[100];
-    char user[] = "/home/liujunming";
+    char *path = NULL;
     char str[100];
     char username[20];
     int true;
     struct utsname uts;
     struct passwd *pwd;
-    signal(SIGINT, SIG_IGN);
     pwd = getpwuid(getuid());
     if (gethostname(computer, 255) != 0 || uname(&uts) < 0){
          fprintf(stderr, "Could not get host information \n"); 
          return 1;
    }
-    getcwd(buffer,sizeof(buffer));
+    path = getcwd(NULL,0);
     strncpy(username, pwd->pw_name, strlen(pwd->pw_name));
     if (username[0] == 'r' && username[1] == 'o' && username[2] == 'o' && username[3] == 't') {
-        if (strlen(buffer) >= 5) {
-    printf("\n\033[36m%s@%s:~%s\033[0m#", pwd->pw_name, computer, buffer+5);
-        } else {
-    printf("\n\033[36m%s@%s:%s\033[0m#", pwd->pw_name, computer, buffer);
-        }
+    printf("\n\033[36m%s@%s:%s\033[0m#", pwd->pw_name, computer, path);
     } else {
-        if (strlen(buffer) >= strlen(user)) {
-    printf("\n\033[36m%s@%s:~%s\033[0m$", pwd->pw_name, computer, buffer+16);
-        } else {
-    printf("\n\033[36m%s@%s:%s\033[0m$", pwd->pw_name, computer, buffer);
-        }
+    printf("\n\033[36m%s@%s:%s\033[0m$", pwd->pw_name, computer, path);
     }
-   memset(buffer, 0, strlen(buffer));
+    
     while (1) {
     scanf("%s", str);
     getchar();
@@ -65,22 +54,13 @@ int main()
          fprintf(stderr, "Could not get host information \n"); 
          return 1;
    }
-     getcwd(buffer, sizeof(buffer));
+    path = getcwd(NULL,0);
             if (username[0] == 'r' && username[1] == 'o' && username[2] == 'o' && username[3] == 't') {
-        if (strlen(buffer) >= 5) {
-    printf("\n\033[36m%s@%s:~%s\033[0m#", pwd->pw_name, computer, buffer+5);
-        } else {
-    printf("\n\033[36m%s@%s:%s\033[0m#", pwd->pw_name, computer, buffer);
-        }
+                printf("\033[36m%s@%s:%s\033[0m#", pwd->pw_name, computer, path);
             } else {
-        if (strlen(buffer) >= strlen(user)) {
-    printf("\n\033[36m%s@%s:~%s\033[0m$", pwd->pw_name, computer, buffer+16);
-        } else {
-    printf("\n\033[36m%s@%s:%s\033[0m$", pwd->pw_name, computer, buffer);
-        }
+                    printf("\033[36m%s@%s:%s\033[0m$", pwd->pw_name, computer, path);
             }
         } 
-    memset(buffer, 0, strlen(buffer));
     memset(str , 0, strlen(str));
     }
     return 0;
