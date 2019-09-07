@@ -58,6 +58,7 @@ void *creatflie(void* str) {
     fd = fopen(path, "w+");
     st->st_fp = fd;
     memset(buf, '\0', sizeof(buf));
+    free(path);
     printf("creat file success!\n");
     return NULL;
 }

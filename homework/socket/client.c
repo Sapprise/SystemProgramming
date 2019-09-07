@@ -7,7 +7,7 @@
 #include <string.h>
 #include <pwd.h>
 
-int socket_connect(int port, char *host) {
+int socket_connect (char *host, int port) {
 	int sockfd;
 	struct sockaddr_in dest_addr;
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -36,11 +36,11 @@ int main(int argc, char *argv[]) {
     FILE * fd;
 	struct passwd *pwd;
     pwd = getpwuid(getuid());	
-	char ip_addr[20] = "192.168.43.204";
+	char ip_addr[20] = "192.168.2.93";
 	int port = 8888;
     char username[20] = {0};
     strcpy(username, pwd->pw_name);
-	socket_fd = socket_connect(port, ip_addr);
+	socket_fd = socket_connect(ip_addr, port);
     if (socket_fd > 0) {
      printf("success!\n");
 }
@@ -52,12 +52,10 @@ int main(int argc, char *argv[]) {
         memset(buf, '\0', sizeof(buf));
         if (name == 1) {
             strcpy(buf, argv[1]);
-            printf("%s", buf );
             write(socket_fd, buf, 10);
             name += 1;
         } else {
             sread = fread(buf, 1, 1, fd); 
-            printf("%d", sread);
             if (sread > 0) {
                 write(socket_fd, buf, strlen(buf));
             }

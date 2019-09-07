@@ -42,7 +42,7 @@ int startup(const char* _ip, int _port)
  
 int main()
 {
-    char ip_addr[20] = "192.168.43.204";
+    char ip_addr[20] = "192.168.2.93";
 	int listen_sock = startup(ip_addr, 8888);
 	struct sockaddr_in client;
 	socklen_t len = sizeof(client);
@@ -73,6 +73,7 @@ int main()
                     strncpy(path, buf, sizeof(buf));
                     //printf("path:%s\n", path);
                     fd = fopen(path, "w+");
+                    free(path);
                 } else {
 			    int s = read(new_sock,buf, 1);
 			        if(s > 0 )
